@@ -102,10 +102,7 @@ class Calendar implements CalendarInterface
             $weekNo = (int)$calendarDay->format('W');
 
 
-            $shouldHighlight = (
-                $this->dateTime >= (clone $calendarDay)->modify('+1 week') &&
-                $this->dateTime < (clone $calendarDay)->modify('+2 week')
-            );
+            $shouldHighlight = $this->shouldHighlight($calendarDay);
 
             for ($i=0; $i<7; $i++) {
                 $week[(int)$calendarDay->format('d')] = $shouldHighlight;
@@ -131,5 +128,13 @@ class Calendar implements CalendarInterface
             ->modify('sunday');
 
         return $lastDay->diff($firstDay, true)->days/7;
+    }
+
+    private function shouldHighlight(DateTimeInterface $day)
+    {
+        return (
+            $this->dateTime >= (clone $day)->modify('+1 week') &&
+            $this->dateTime < (clone $day)->modify('+2 week')
+        );
     }
 }
