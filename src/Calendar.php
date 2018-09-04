@@ -23,7 +23,7 @@ class Calendar implements CalendarInterface
      */
     public function getDay()
     {
-        return (int)$this->dateTime->format('d');
+        return (int)(clone $this->dateTime)->format('d');
     }
 
     /**
@@ -33,7 +33,7 @@ class Calendar implements CalendarInterface
      */
     public function getWeekDay()
     {
-        return (int)$this->dateTime->format('N');
+        return (int)(clone $this->dateTime)->format('N');
     }
 
     /**
@@ -43,7 +43,9 @@ class Calendar implements CalendarInterface
      */
     public function getFirstWeekDay()
     {
-        return (int)$this->dateTime->modify('first day of this month')->format('N');
+        return (int)(clone $this->dateTime)
+            ->modify('first day of this month')
+            ->format('N');
     }
 
     /**
@@ -53,7 +55,9 @@ class Calendar implements CalendarInterface
      */
     public function getFirstWeek()
     {
-        return (int)$this->dateTime->modify('first day of this month')->format('W');
+        return (int)(clone $this->dateTime)
+            ->modify('first day of this month')
+            ->format('W');
     }
 
     /**
@@ -63,7 +67,9 @@ class Calendar implements CalendarInterface
      */
     public function getNumberOfDaysInThisMonth()
     {
-        return (int)$this->dateTime->modify('last day of this month')->format('d');
+        return (int)(clone $this->dateTime)
+            ->modify('last day of this month')
+            ->format('d');
     }
 
     /**
@@ -73,7 +79,9 @@ class Calendar implements CalendarInterface
      */
     public function getNumberOfDaysInPreviousMonth()
     {
-        return (int)$this->dateTime->modify('last day of previous month')->format('d');
+        return (int)(clone $this->dateTime)
+            ->modify('last day of previous month')
+            ->format('d');
     }
 
     /**
@@ -83,6 +91,45 @@ class Calendar implements CalendarInterface
      */
     public function getCalendar()
     {
-        // TODO: Implement getCalendar() method.
+        $firstDayOfMonth = (clone $this->dateTime)->modify('first day of this month');
+
+        $calendarDay = (clone $firstDayOfMonth)->modify('first monday of this week');
+
+        $calendar = [];
+
+        for ($w=0; $w<$this->getNumberOfWeeksInThisMonth(); $w++) {
+            $week = [];
+            $weekNo = (int)$calendarDay->format('W');
+
+
+            $shouldHighlight = (
+                $this->dateTime >= (clone $calendarDay)->modify('+1 week') &&
+                $this->dateTime < (clone $calendarDay)->modify('+2 week')
+            );
+
+            for ($i=0; $i<7; $i++) {
+                $week[(int)$calendarDay->format('d')] = $shouldHighlight;
+
+                $calendarDay->modify('+1 day');
+            }
+
+            $calendar[$weekNo] = $week;
+
+        }
+
+        return $calendar;
+    }
+
+    private function getNumberOfWeeksInThisMonth()
+    {
+        $firstDay = (clone $this->dateTime)
+            ->modify('first day of this month')
+            ->modify('first monday of this week');
+
+        $lastDay  = (clone $this->dateTime)
+            ->modify('last day of this month')
+            ->modify('sunday');
+
+        return $lastDay->diff($firstDay, true)->days/7;
     }
 }
